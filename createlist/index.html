@@ -114,7 +114,7 @@
           const data = await res.json();
           if (data.state === "success") {
             alert("Liste erfolgreich gespeichert!");
-            window.location.href = `blearn.netlify.app/lernen?route=${route}`;
+            window.location.href = `https://blearn.netlify.app/lernen?route=${route}`;
           } else {
             alert("Fehler beim Speichern.");
           }
