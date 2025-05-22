@@ -23,7 +23,7 @@
       <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <h3 class="text-lg font-semibold text-blue-600">Jetzt Lernen!</h3>
         <p class="text-sm text-gray-600 mt-2">Erstelle deine eigenen Karteikästen.</p>
-        <a href="./lernen" class="text-blue-500 text-sm mt-4 inline-block hover:underline">Jetzt loslegen →</a>
+        <a href="/lernen" class="text-blue-500 text-sm mt-4 inline-block hover:underline">Jetzt loslegen →</a>
       </div>
     </div>
   </main>
@@ -39,7 +39,7 @@
       const password = localStorage.getItem("password");
 
       if (!userName || !password) {
-        window.location.href = "./login";
+        window.location.href = "/login";
         return;
       }
 
@@ -55,19 +55,19 @@
         if (data.state === "error") {
           localStorage.removeItem("userName");
           localStorage.removeItem("password");
-          window.location.href = "./login";
+          window.location.href = "/login";
         } else {
           console.log("Successful login");
         }
       } catch (err) {
         console.error("Fehler beim Prüfen der Daten:", err);
-        window.location.href = "./login";
+        window.location.href = "/login";
       }
 
       document.getElementById("logoutBtn").addEventListener("click", () => {
         localStorage.removeItem("userName");
         localStorage.removeItem("password");
-        window.location.href = "./login";
+        window.location.href = "/login";
       });
       
       document.getElementById("header").innerHTML = "Willkommen zurück, " + userName + "!"
