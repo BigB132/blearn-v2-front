@@ -114,6 +114,7 @@
           const data = await res.json();
           if (data.state === "success") {
             alert("Liste erfolgreich gespeichert!");
+            window.location.href = "blearn.netlify.app/lernen?route=${route}";
           } else {
             alert("Fehler beim Speichern.");
           }
@@ -125,7 +126,7 @@
 
       logoutBtn.addEventListener("click", () => {
         localStorage.clear();
-        window.location.href = "./login";
+        window.location.href = "/login";
       });
 
       function deleteEntry(index) {
@@ -153,7 +154,7 @@
       
 
       if (!userName || !password) {
-        window.location.href = "./login";
+        window.location.href = "/login";
         return;
       }
 
@@ -166,7 +167,7 @@
       const data = await res.json();
       if (data.state === "error") {
         localStorage.clear();
-        window.location.href = "./login";
+        window.location.href = "/login";
       }
     });
   </script>
