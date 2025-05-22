@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vokabelliste bearbeiten – Blearn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
+    <div class="space-x-2">
+      <button id="backBtn" class="px-4 py-2 text-sm font-semibold text-blue-600 bg-white border border-blue-500 rounded-md hover:bg-blue-50 transition-all">
+        Zurück
+      </button>
+      <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-all">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Vokabelliste bearbeiten</h2>
+        <span id="listPath" class="text-blue-600 text-sm"></span>
+      </div>
+      
+      <!-- Listenname -->
+      <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+        <label for="listNameInput" class="block text-sm font-medium text-gray-700 mb-1">Name der Liste</label>
+        <input id="listNameInput" type="text" placeholder="Name der Vokabelliste" class="w-full border p-2 rounded-md" disabled />
+      </div>
+
+      <!-- Eingabe -->
+      <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <input id="wordInput" type="text" placeholder="Vokabel" class="border p-2 rounded-md" />
+          <input id="translationInput" type="text" placeholder="Übersetzung" class="border p-2 rounded-md" />
+        </div>
+        <button id="addBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Hinzufügen</button>
+      </div>
+
+      <!-- Liste -->
+      <div class="bg-white p-6 rounded-xl shadow-md">
+        <div class="mb-4 text-sm text-gray-600">Du kannst die Vokabeln direkt in der Tabelle bearbeiten.</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-4 py-2 border-b">Vokabel</th>
+                <th class="px-4 py-2 border-b">Übersetzung</th>
+                <th class="px-4 py-2 border-b">Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="vocabList"></tbody>
+          </table>
+        </div>
+        <div class="mt-6 flex justify-between">
+          <button id="cancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition">Abbrechen</button>
+          <button id="saveBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Änderungen speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md">
+      <p class="font-bold">Fehler</p>
+      <p id="errorText"></p>
+      <button onclick="window.location.reload()" class="mt-2 px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+        Neu laden
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center text-sm py-4 border-t mt-8 text-gray-500">
+    © 2025 Blearn
+  </footer>
+
+  <!-- Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      // API Base URL
+      const API_BASE_URL = 'https://blearnend.onrender.com';
+        
+      // Query parameters
+      const params = new URLSearchParams(window.location.search);
+      const route = params.get("route") || "/";
+      const lesson = params.get("lesson");
+      
+      if (!lesson) {
+        showError("Keine Vokabelliste angegeben!");
+        return;
+      }
+      
+      // Update breadcrumb/path info
+      document.getElementById("listPath").textContent = `${route}/${lesson}`;
+      document.getElementById("listNameInput").value = lesson;
+
+      // DOM Elements
+      const wordInput = document.getElementById("wordInput");
+      const translationInput = document.getElementById("translationInput");
+      const addBtn = document.getElementById("addBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const vocabList = document.getElementById("vocabList");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const backBtn = document.getElementById("backBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+
+      let entries = [];
+
+      // Check authentication
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+
+      if (!userName || !password) {
+        window.location.href = "./login";
+        return;
+      }
+
+      // Function to render the vocabulary list
+      function renderList() {
+        vocabList.innerHTML = "";
+        entries.forEach((entry, index) => {
+          vocabList.innerHTML += `
+            <tr class="border-b hover:bg-gray-50">
+              <td class="px-4 py-2">
+                <input type="text" class="w-full p-1 border rounded" value="${escapeHTML(entry.german)}" onchange="updateWord(${index}, this.value)" />
+              </td>
+              <td class="px-4 py-2">
+                <input type="text" class="w-full p-1 border rounded" value="${escapeHTML(entry.translation)}" onchange="updateTranslation(${index}, this.value)" />
+              </td>
+              <td class="px-4 py-2">
+                <button onclick="deleteEntry(${index})" class="text-red-500 hover:text-red-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // Escape HTML to prevent XSS
+      function escapeHTML(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Add new vocabulary entry
+      addBtn.addEventListener("click", () => {
+        const word = wordInput.value.trim();
+        const translation = translationInput.value.trim();
+
+        if (word && translation) {
+          entries.push({ german: word, translation });
+          wordInput.value = "";
+          translationInput.value = "";
+          renderList();
+          wordInput.focus();
+        } else {
+          alert("Bitte gib sowohl die Vokabel als auch die Übersetzung ein.");
+        }
+      });
+
+      // Listen for Enter key in the input fields
+      wordInput.addEventListener("keyup", (event) => {
+        if (event.key === "Enter") {
+          translationInput.focus();
+        }
+      });
+
+      translationInput.addEventListener("keyup", (event) => {
+        if (event.key === "Enter") {
+          addBtn.click();
+        }
+      });
+
+      // Save changes
+      saveBtn.addEventListener("click", async () => {
+        if (entries.length === 0) {
+          alert("Die Liste enthält keine Vokabeln. Bitte füge mindestens eine Vokabel hinzu.");
+          return;
+        }
+
+        try {
+          saveBtn.disabled = true;
+          saveBtn.textContent = "Wird gespeichert...";
+          
+          const res = await fetch(`${API_BASE_URL}/editList`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              userName, 
+              password, 
+              vocabList: entries, 
+              route, 
+              lesson 
+            }),
+            signal: AbortSignal.timeout(10000) // 10 seconds timeout
+          });
+
+          const data = await res.json();
+          if (data.state === "success") {
+            alert("Liste erfolgreich gespeichert!");
+            window.location.href = `/lernen?route=${encodeURIComponent(route)}`;
+          } else {
+            alert(`Fehler beim Speichern: ${data.message || 'Unbekannter Fehler'}`);
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Änderungen speichern";
+          }
+        } catch (err) {
+          console.error("Speichern fehlgeschlagen:", err);
+          alert(`Verbindung zum Server fehlgeschlagen: ${err.message || 'Netzwerkfehler'}`);
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Änderungen speichern";
+        }
+      });
+
+      // Navigation and logout
+      logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "./login";
+      });
+
+      backBtn.addEventListener("click", () => {
+        if (hasChanges()) {
+          if (confirm("Es gibt ungespeicherte Änderungen. Möchtest du wirklich zurück, ohne zu speichern?")) {
+            goBack();
+          }
+        } else {
+          goBack();
+        }
+      });
+
+      cancelBtn.addEventListener("click", () => {
+        if (hasChanges()) {
+          if (confirm("Bist du sicher, dass du alle Änderungen verwerfen möchtest?")) {
+            goBack();
+          }
+        } else {
+          goBack();
+        }
+      });
+
+      function goBack() {
+        window.location.href = `/lernen?route=${encodeURIComponent(route)}`;
+      }
+
+      // Check if there are unsaved changes
+      let originalEntries = [];
+      function hasChanges() {
+        if (entries.length !== originalEntries.length) return true;
+        
+        for (let i = 0; i < entries.length; i++) {
+          if (entries[i].german !== originalEntries[i].german || 
+              entries[i].translation !== originalEntries[i].translation) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Delete entry
+      function deleteEntry(index) {
+        if (confirm("Möchtest du diese Vokabel wirklich löschen?")) {
+          entries.splice(index, 1);
+          renderList();
+        }
+      }
+      window.deleteEntry = deleteEntry;
+
+      // Update entry
+      function updateWord(index, value) {
+        entries[index].german = value;
+      }
+      window.updateWord = updateWord;
+
+      function updateTranslation(index, value) {
+        entries[index].translation = value;
+      }
+      window.updateTranslation = updateTranslation;
+
+      // Show error message
+      function showError(message) {
+        document.getElementById("loadingIndicator").style.display = "none";
+        document.getElementById("mainContent").style.display = "none";
+        document.getElementById("errorMessage").style.display = "block";
+        document.getElementById("errorText").textContent = message;
+      }
+
+      // Load vocabulary data
+      try {
+        const res = await fetch(`${API_BASE_URL}/getVocabulary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password, route, lesson }),
+          signal: AbortSignal.timeout(10000) // 10 seconds timeout
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server responded with status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (data.state === "error") {
+          showError(data.message || "Fehler beim Laden der Vokabelliste");
+          return;
+        }
+
+        if (!data.list || !Array.isArray(data.list)) {
+          showError("Die Vokabelliste konnte nicht geladen werden (ungültiges Format)");
+          return;
+        }
+
+        // Load vocabulary into entries array
+        entries = data.list;
+        originalEntries = JSON.parse(JSON.stringify(entries)); // Deep copy for change tracking
+        renderList();
+
+        // Hide loading indicator and show content
+        document.getElementById("loadingIndicator").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+
+      } catch (err) {
+        console.error("Fehler beim Laden der Vokabelliste:", err);
+        showError(err.message || "Verbindung zum Server fehlgeschlagen");
+      }
+    });
+  </script>
+</body>
+</html>

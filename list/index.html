@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vokabelquiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center py-8">
+  <div class="w-full max-w-4xl px-4">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2" id="lessonTitle">Vokabelquiz</h1>
+      <a href="/lernen" class="text-blue-400 hover:underline">Zurück zur Übersicht</a>
+    </header>
+
+    <!-- Quiz Table -->
+    <div class="overflow-x-auto mb-8">
+      <table class="w-full rounded-lg overflow-hidden">
+        <thead class="bg-gray-700">
+          <tr>
+            <th class="py-3 px-4 text-left">Deutsch</th>
+            <th class="py-3 px-4 text-left">Übersetzung</th>
+          </tr>
+        </thead>
+        <tbody id="vocabularyTable" class="bg-gray-800 divide-y divide-gray-700">
+          <!-- Vocabulary rows will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Check Answers Button -->
+    <div class="text-center">
+      <button onclick="checkAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+        Antworten überprüfen
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Get route and lesson from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const route = urlParams.get('route') || '/';
+    const lesson = urlParams.get('lesson');
+    
+    // Correct answers object
+    let correctAnswers = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set lesson title
+      if (lesson) {
+        document.getElementById('lessonTitle').textContent = lesson;
+      }
+
+      // Get vocabulary from server
+      try {
+        const userName = localStorage.getItem('userName');
+        const password = localStorage.getItem('password');
+
+        if (!userName || !password) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const res = await fetch("https://blearnend.onrender.com/getVocabulary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password, route, lesson })
+        });
+
+        if (!res.ok) {
+          throw new Error('Server responded with error');
+        }
+
+        const data = await res.json();
+        
+        if (!data || !data.list) {
+          throw new Error('Invalid data format received');
+        }
+
+        // Populate correctAnswers and create table rows
+        const tableBody = document.getElementById('vocabularyTable');
+        tableBody.innerHTML = '';
+
+        data.list.forEach((item, index) => {
+          if (!item.german || !item.translation) return;
+
+          const id = `vocab-${index}`;
+          correctAnswers[id] = item.translation.toLowerCase();
+
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-gray-700';
+          row.innerHTML = `
+            <td class="py-3 px-4">${item.german}</td>
+            <td class="py-3 px-4">
+              <input type="text" id="${id}" 
+                class="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span id="${id}-solution" class="hidden text-red-400 text-sm mt-1 block"></span>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Shuffle rows
+        shuffleRows();
+
+      } catch (error) {
+        alert(error)
+        console.error('Error loading vocabulary:', error);
+        document.getElementById('vocabularyTable').innerHTML = `
+          <tr>
+            <td colspan="2" class="py-4 text-center text-red-400">
+              Fehler beim Laden der Vokabeln. Bitte versuche es später erneut.
+            </td>
+          </tr>
+        `;
+      }
+    });
+
+    function shuffleRows() {
+      const tableBody = document.getElementById('vocabularyTable');
+      const rows = Array.from(tableBody.children);
+      
+      // Fisher-Yates shuffle algorithm
+      for (let i = rows.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        tableBody.insertBefore(rows[j], rows[i]);
+      }
+    }
+
+    function checkAnswers() {
+      for (const id in correctAnswers) {
+        const inputField = document.getElementById(id);
+        const solutionSpan = document.getElementById(`${id}-solution`);
+        const userAnswer = inputField.value.trim().toLowerCase();
+        const correctAnswer = correctAnswers[id].toLowerCase();
+
+        // Remove previous styling
+        inputField.classList.remove('bg-green-700', 'bg-red-700', 'border-green-500', 'border-red-500');
+        
+        if (userAnswer === correctAnswer) {
+          // Correct answer
+          inputField.classList.add('bg-green-700', 'border-green-500');
+          if (solutionSpan) solutionSpan.classList.add('hidden');
+        } else {
+          // Incorrect answer
+          inputField.classList.add('bg-red-700', 'border-red-500');
+          if (solutionSpan) {
+            solutionSpan.textContent = `Richtige Antwort: ${correctAnswers[id]}`;
+            solutionSpan.classList.remove('hidden');
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
