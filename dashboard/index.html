@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
+    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-all">
+      Logout
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6" id="header">Willkommen zurück!</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h3 class="text-lg font-semibold text-blue-600">Jetzt Lernen!</h3>
+        <p class="text-sm text-gray-600 mt-2">Erstelle deine eigenen Karteikästen.</p>
+        <a href="./lernen" class="text-blue-500 text-sm mt-4 inline-block hover:underline">Jetzt loslegen →</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center text-sm py-4 border-t mt-8 text-gray-500">
+    © 2025 Lernplattform. Alle Rechte vorbehalten.
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+
+      if (!userName || !password) {
+        window.location.href = "./login";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://blearnend.onrender.com/checkData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password })
+        });
+
+        const data = await res.json();
+
+        if (data.state === "error") {
+          localStorage.removeItem("userName");
+          localStorage.removeItem("password");
+          window.location.href = "./login";
+        } else {
+          console.log("Successful login");
+        }
+      } catch (err) {
+        console.error("Fehler beim Prüfen der Daten:", err);
+        window.location.href = "./login";
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("userName");
+        localStorage.removeItem("password");
+        window.location.href = "./login";
+      });
+      
+      document.getElementById("header").innerHTML = "Willkommen zurück, " + userName + "!"
+    });
+  </script>
+</body>
+</html>

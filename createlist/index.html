@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vokabelliste erstellen – Blearn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
+    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-all">
+      Logout
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Vokabelliste erstellen</h2>
+    
+    <!-- Listenname -->
+    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+      <input id="listNameInput" type="text" placeholder="Name der Vokabelliste" class="w-full border p-2 rounded-md" />
+    </div>
+
+
+    <!-- Eingabe -->
+    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <input id="wordInput" type="text" placeholder="Vokabel" class="border p-2 rounded-md" />
+        <input id="translationInput" type="text" placeholder="Übersetzung" class="border p-2 rounded-md" />
+      </div>
+      <button id="addBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Hinzufügen</button>
+    </div>
+
+    <!-- Liste -->
+    <div class="bg-white p-6 rounded-xl shadow-md">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr>
+            <th class="pb-2">Vokabel</th>
+            <th class="pb-2">Übersetzung</th>
+            <th class="pb-2">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody id="vocabList"></tbody>
+      </table>
+      <button id="saveBtn" class="mt-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Liste speichern</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center text-sm py-4 border-t mt-8 text-gray-500">
+    © 2025 Lernplattform. Alle Rechte vorbehalten.
+  </footer>
+
+  <!-- Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const params = new URLSearchParams(window.location.search);
+      const route = params.get("route");
+
+      const wordInput = document.getElementById("wordInput");
+      const translationInput = document.getElementById("translationInput");
+      const addBtn = document.getElementById("addBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const vocabList = document.getElementById("vocabList");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      let entries = [];
+
+      function renderList() {
+        vocabList.innerHTML = "";
+        entries.forEach((entry, index) => {
+          vocabList.innerHTML += `
+            <tr class="border-t">
+              <td><input type="text" class="w-full p-1 border rounded" value="${entry.word}" onchange="updateWord(${index}, this.value)" /></td>
+              <td><input type="text" class="w-full p-1 border rounded" value="${entry.translation}" onchange="updateTranslation(${index}, this.value)" /></td>
+              <td>
+                <button onclick="deleteEntry(${index})" class="text-red-500 hover:underline">Löschen</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      addBtn.addEventListener("click", () => {
+        const word = wordInput.value.trim();
+        const translation = translationInput.value.trim();
+
+        if (word && translation) {
+          entries.push({ word, translation });
+          wordInput.value = "";
+          translationInput.value = "";
+          renderList();
+        }
+      });
+
+      saveBtn.addEventListener("click", async () => {
+        const userName = localStorage.getItem("userName");
+        const password = localStorage.getItem("password");
+        const listNameInput = document.getElementById("listNameInput");
+        const listName = listNameInput.value.trim();
+
+        try {
+          const res = await fetch("https://blearnend.onrender.com/savelist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userName, password, vocabList: entries, route, name: listName })
+          });
+
+          const data = await res.json();
+          if (data.state === "success") {
+            alert("Liste erfolgreich gespeichert!");
+          } else {
+            alert("Fehler beim Speichern.");
+          }
+        } catch (err) {
+          console.error("Speichern fehlgeschlagen:", err);
+          alert("Verbindung zum Server fehlgeschlagen: ", err);
+        }
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "./login";
+      });
+
+      function deleteEntry(index) {
+        entries.splice(index, 1);
+        renderList();
+      }
+
+      window.deleteEntry = deleteEntry;
+
+      function updateWord(index, value) {
+        entries[index].word = value;
+      }
+
+      window.updateWord = updateWord;
+
+      function updateTranslation(index, value) {
+        entries[index].translation = value;
+      }
+
+      window.updateTranslation = updateTranslation;
+
+      // Authentifizierung prüfen
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+      
+
+      if (!userName || !password) {
+        window.location.href = "./login";
+        return;
+      }
+
+      const res = await fetch("https://blearnend.onrender.com/checkData", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password })
+      });
+
+      const data = await res.json();
+      if (data.state === "error") {
+        localStorage.clear();
+        window.location.href = "./login";
+      }
+    });
+  </script>
+</body>
+</html>

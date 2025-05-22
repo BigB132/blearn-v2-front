@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lernen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
+    <a href="/dashboard" class="text-sm text-blue-600 hover:underline">Zurück zum Dashboard</a>
+  </header>
+  
+  <!-- Modal für Ordner erstellen -->
+  <div id="folderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-6 shadow-lg w-80">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">📁 Ordner erstellen</h3>
+      <input id="folderNameInput" type="text" placeholder="Ordnername" class="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeFolderModal()" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-800">Abbrechen</button>
+        <button onclick="submitFolder()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Erstellen</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Kontextmenü -->
+  <div id="contextMenu" class="absolute bg-white border rounded shadow-lg hidden z-50">
+    <button onclick="openRenameModal()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Umbenennen</button>
+    <button onclick="editList()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Bearbeiten</button>
+    <button onclick="confirmDelete()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-500">Löschen</button>
+  </div>
+
+  <!-- Umbenennen Modal -->
+  <div id="renameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded shadow w-80">
+      <h3 class="text-lg font-bold mb-4">✏️ Umbenennen</h3>
+      <input id="renameInput" type="text" class="w-full border px-3 py-2 mb-4" />
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeRenameModal()" class="px-3 py-2 text-sm text-gray-600">Abbrechen</button>
+        <button onclick="submitRename()" class="bg-blue-500 text-white px-4 py-2 rounded">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="flex-1 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">📂 Deine Vokabellisten</h2>
+      <div class="space-x-2">
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow" onclick="createFolder()">📁 Ordner erstellen</button>
+        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow" onclick="createList()">➕ Neue Vokabelliste</button>
+      </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <nav id="breadcrumb" class="text-sm text-blue-600 mb-4 flex flex-wrap gap-1 items-center"></nav>
+
+    <!-- Loader -->
+    <div id="loader" class="flex justify-center items-center h-40">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+    </div>
+
+    <!-- Leere-Nachricht -->
+    <p id="emptyMessage" class="hidden text-center text-gray-600 mt-8">Du hast noch keine Vokabellisten oder Ordner erstellt.</p>
+
+    <!-- List container -->
+    <ul id="lessonList" class="space-y-4 hidden"></ul>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center text-sm py-4 border-t text-gray-500">
+    © 2025 Blearn
+  </footer>
+
+  <script>
+  let route;
+  // API-Basis-URL - ändern Sie diese entsprechend Ihrer Backend-Konfiguration
+  const API_BASE_URL = 'https://blearnend.onrender.com';
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const userName = localStorage.getItem("userName");
+    const password = localStorage.getItem("password");
+
+    if (!userName || !password) {
+      window.location.href = "./login";
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    route = params.get("route") || "/";
+
+    renderBreadcrumb(route);
+
+    try {
+      // Verbesserte Fehlerbehandlung für den Fetch-Request
+      const res = await fetch(`${API_BASE_URL}/getList`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password, route }),
+        // Timeout hinzufügen
+        signal: AbortSignal.timeout(10000) // 10 Sekunden Timeout
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      const loader = document.getElementById("loader");
+      const list = document.getElementById("lessonList");
+      const emptyMessage = document.getElementById("emptyMessage");
+      
+      loader.style.display = "none";
+
+      // Überprüfung der Datenstruktur
+      if (!data || !data.lessons) {
+        console.error("Ungültiges Datenformat empfangen:", data);
+        document.getElementById("loader").innerHTML = `<p class="text-red-500">Ungültiges Datenformat vom Server empfangen.</p>`;
+        return;
+      }
+
+      if (!Array.isArray(data.lessons) || data.lessons.length === 0) {
+        emptyMessage.classList.remove("hidden");
+        return;
+      }
+
+      list.innerHTML = "";
+
+      // Sortieren der Elemente: Erst Ordner, dann Listen, beides alphabetisch nach Namen
+      const sortedLessons = [...data.lessons].sort((a, b) => {
+        // Zuerst nach Typ sortieren (Ordner = 1 vor Listen = 0)
+        if (a.type !== b.type) {
+          return b.type - a.type; // Ordner (1) werden vor Listen (0) angezeigt
+        }
+        // Bei gleichem Typ alphabetisch nach Namen sortieren
+        return a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+      });
+
+      sortedLessons.forEach((lesson) => {
+        if (!lesson || typeof lesson !== 'object' || !lesson.name) {
+          console.warn("Ungültiges Lesson-Objekt übersprungen:", lesson);
+          return;
+        }
+        
+        const item = document.createElement("li");
+        item.className = "bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer hover:bg-blue-50";
+        
+        // Event-Handler mit Fehlerbehandlung
+        item.onclick = (e) => {
+          try {
+            if (lesson.type === 1) { // Wenn es ein Ordner ist
+              window.location.href = `/lernen?route=${route}/${encodeURIComponent(lesson.name)}`;
+            } else { // Wenn es eine Vokabelliste ist
+              window.location.href = `/list?route=${encodeURIComponent(route)}&lesson=${encodeURIComponent(lesson.name)}`;
+            }
+          } catch (error) {
+            console.error("Fehler bei Navigation:", error);
+          }
+        };
+        
+        const icon = lesson.type === 0 ? "📗" : "📁";
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span>${icon} ${lesson.name}</span>
+            <button onclick="openContextMenu(event, '${lesson.name.replace(/'/g, "\\'")}', ${lesson.type})" class="text-gray-500 hover:text-gray-700">⋮</button>
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+
+      list.classList.remove("hidden");
+
+    } catch (err) {
+      console.error("Fehler beim Laden der Lerneinheiten:", err);
+      document.getElementById("loader").innerHTML = `
+        <div class="text-center">
+          <p class="text-red-500 text-lg mb-2">Fehler beim Laden der Daten</p>
+          <p class="text-gray-600 mb-4">${err.message || 'Verbindung zum Server fehlgeschlagen'}</p>
+          <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+            Neu laden
+          </button>
+        </div>
+      `;
+    }
+  });
+
+  // Pfad-Breadcrumb anzeigen - KORRIGIERT
+  function renderBreadcrumb(route) {
+    const container = document.getElementById("breadcrumb");
+    container.innerHTML = "";
+
+    const parts = route.split("/").filter(p => p !== "");
+    let currentPath = "";
+
+    // Root Link - KORRIGIERT
+    const rootLink = document.createElement("a");
+    rootLink.href = "/lernen?route=/"; // Fix: route=/ statt route=//
+    rootLink.textContent = "Home";
+    rootLink.className = "hover:underline";
+    container.appendChild(rootLink);
+
+    if (parts.length > 0) {
+      const sep = document.createElement("span");
+      sep.textContent = " / ";
+      container.appendChild(sep);
+    }
+
+    parts.forEach((part, index) => {
+      currentPath += "/" + part;
+
+      const link = document.createElement("a");
+      link.href = `/lernen?route=${encodeURIComponent(currentPath)}`;
+      link.textContent = part;
+      link.className = "hover:underline";
+
+      container.appendChild(link);
+
+      if (index < parts.length - 1) {
+        const sep = document.createElement("span");
+        sep.textContent = " / ";
+        container.appendChild(sep);
+      }
+    });
+  }
+
+  // Modal-Logik
+  function createFolder() {
+    document.getElementById("folderModal").classList.remove("hidden");
+    setTimeout(() => document.getElementById("folderNameInput").focus(), 100);
+  }
+
+  function closeFolderModal() {
+    document.getElementById("folderModal").classList.add("hidden");
+    document.getElementById("folderNameInput").value = "";
+  }
+
+  async function submitFolder() {
+    const folderName = document.getElementById("folderNameInput").value.trim();
+    if (!folderName) {
+      alert("Bitte gib einen Ordnernamen ein.");
+      return;
+    }
+
+    const userName = localStorage.getItem("userName");
+    const password = localStorage.getItem("password");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/createFolder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password, route, folderName }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.state === "success") {
+        alert("Ordner wurde erstellt!");
+        closeFolderModal();
+        location.reload();
+      } else {
+        alert(`Fehler beim Erstellen des Ordners: ${data.message || 'Unbekannter Fehler'}`);
+      }
+    } catch (err) {
+      console.error("Fehler:", err);
+      alert(`Ein Fehler ist aufgetreten: ${err.message || 'Verbindungsproblem'}`);
+    }
+  }
+    
+  let selectedItem = { name: "", type: 0 };
+
+  function openContextMenu(event, name, type) {
+    event.stopPropagation();
+    selectedItem = { name, type };
+
+    const menu = document.getElementById("contextMenu");
+    
+    // Bildschirmgrenze prüfen und Menü positionieren
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const menuWidth = 150; // ungefähre Breite des Menüs
+    const menuHeight = 120; // ungefähre Höhe des Menüs
+    
+    let left = event.pageX;
+    let top = event.pageY;
+    
+    // Prüfen ob das Menü rechts über den Bildschirm hinausragt
+    if (left + menuWidth > viewportWidth) {
+      left = viewportWidth - menuWidth - 10;
+    }
+    
+    // Prüfen ob das Menü unten über den Bildschirm hinausragt
+    if (top + menuHeight > viewportHeight) {
+      top = viewportHeight - menuHeight - 10;
+    }
+    
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.classList.remove("hidden");
+  }
+
+  document.addEventListener("click", () => {
+    document.getElementById("contextMenu").classList.add("hidden");
+  });
+
+  // Umbenennen Modal
+  function openRenameModal() {
+    document.getElementById("renameInput").value = selectedItem.name;
+    document.getElementById("renameModal").classList.remove("hidden");
+    setTimeout(() => document.getElementById("renameInput").focus(), 100);
+  }
+
+  function closeRenameModal() {
+    document.getElementById("renameModal").classList.add("hidden");
+  }
+
+  async function submitRename() {
+    const newName = document.getElementById("renameInput").value.trim();
+    if (!newName) return;
+
+    const userName = localStorage.getItem("userName");
+    const password = localStorage.getItem("password");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/rename`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userName, 
+          password, 
+          route,
+          oldName: selectedItem.name, 
+          newName
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.state === "success") {
+        closeRenameModal();
+        location.reload();
+      } else {
+        alert(`Fehler beim Umbenennen: ${data.message || 'Unbekannter Fehler'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(`Ein Fehler ist aufgetreten: ${err.message || 'Verbindungsproblem'}`);
+    }
+  }
+
+  // NEU: Liste bearbeiten Funktion
+  function editList() {
+    // Nur für Listen, nicht für Ordner
+    if (selectedItem.type === 0) {
+      window.location.href = `/editList?route=${encodeURIComponent(route)}&lesson=${encodeURIComponent(selectedItem.name)}`;
+    } else {
+      alert("Nur Vokabellisten können bearbeitet werden.");
+    }
+  }
+  
+  // Löschen
+  async function confirmDelete() {
+    if (!confirm(`Möchtest du "${selectedItem.name}" wirklich löschen?`)) return;
+
+    const userName = localStorage.getItem("userName");
+    const password = localStorage.getItem("password");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userName, 
+          password, 
+          route, 
+          name: selectedItem.name 
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.state === "success") {
+        location.reload();
+      } else {
+        alert(`Fehler beim Löschen: ${data.message || 'Unbekannter Fehler'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(`Ein Fehler ist aufgetreten: ${err.message || 'Verbindungsproblem'}`);
+    }
+  }
+
+  // Event-Listener für Enter-Taste in Modals
+  document.getElementById("folderNameInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+      submitFolder();
+    }
+  });
+
+  document.getElementById("renameInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+      submitRename();
+    }
+  });
+    
+  function createList() {
+    window.location.href = `/createlist?route=${encodeURIComponent(route)}`;
+  }
+    
+  </script>
+
+</body>
+</html>
