@@ -30,6 +30,7 @@
   <div id="contextMenu" class="absolute bg-white border rounded shadow-lg hidden z-50">
     <button onclick="openRenameModal()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Umbenennen</button>
     <button onclick="editList()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Bearbeiten</button>
+    <button onclick="shareItem()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 text-blue-600">Teilen</button>
     <button onclick="confirmDelete()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-500">Löschen</button>
   </div>
 
@@ -45,13 +46,84 @@
     </div>
   </div>
 
+  <!-- Share Modal -->
+  <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-6 shadow-lg w-96">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">🔗 Teilen</h3>
+      
+      <div id="shareLoader" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-4 border-blue-500 border-opacity-50"></div>
+        <span class="ml-2 text-gray-600">ID wird abgerufen...</span>
+      </div>
+      
+      <div id="shareContent" class="hidden">
+        <p class="text-gray-600 mb-4">Teile diese Vokabelliste mit anderen:</p>
+        <div class="bg-gray-50 p-3 rounded border mb-4">
+          <label class="text-sm text-gray-500 block mb-1">Share-ID:</label>
+          <div class="flex items-center space-x-2">
+            <input id="shareId" type="text" readonly class="flex-1 bg-transparent border-none focus:outline-none font-mono text-sm" />
+            <button onclick="copyShareId()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+              📋 Kopieren
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mb-4">
+          Andere können mit dieser ID auf deine Vokabelliste zugreifen.
+        </p>
+      </div>
+      
+      <div id="shareError" class="hidden text-center py-4">
+        <p class="text-red-500 mb-2">Fehler beim Abrufen der Share-ID</p>
+        <button onclick="retryFetchId()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+          Erneut versuchen
+        </button>
+      </div>
+      
+      <div class="flex justify-end space-x-2 mt-4">
+        <button onclick="closeShareModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Schließen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main -->
   <main class="flex-1 p-6">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-2xl font-bold text-gray-800">📂 Deine Vokabellisten</h2>
-      <div class="space-x-2">
+      <div class="space-x-2 flex items-center">
         <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow" onclick="createFolder()">📁 Ordner erstellen</button>
-        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow" onclick="createList()">➕ Neue Vokabelliste</button>
+        
+        <!-- Dropdown für Vokabelliste -->
+        <div class="relative">
+          <button id="vocabDropdownBtn" onclick="toggleVocabDropdown()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow flex items-center space-x-2 transition-all duration-200">
+            <span>➕ Neue Vokabelliste</span>
+            <svg id="dropdownArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div id="vocabDropdownMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-40 overflow-hidden">
+            <div class="py-1">
+              <button onclick="createList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150">
+                <span class="mr-3 text-lg">📝</span>
+                <div>
+                  <div class="font-medium">Erstellen</div>
+                  <div class="text-sm text-gray-500">Neue Vokabelliste anlegen</div>
+                </div>
+              </button>
+              
+              <hr class="border-gray-100">
+              
+              <button onclick="importList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150">
+                <span class="mr-3 text-lg">📥</span>
+                <div>
+                  <div class="font-medium">Importieren</div>
+                  <div class="text-sm text-gray-500">Vokabelliste hochladen</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -189,6 +261,33 @@
     }
   });
 
+  // Dropdown-Funktionen
+  function toggleVocabDropdown() {
+    const menu = document.getElementById("vocabDropdownMenu");
+    const arrow = document.getElementById("dropdownArrow");
+    const isHidden = menu.classList.contains("hidden");
+    
+    if (isHidden) {
+      menu.classList.remove("hidden");
+      arrow.style.transform = "rotate(180deg)";
+    } else {
+      menu.classList.add("hidden");
+      arrow.style.transform = "rotate(0deg)";
+    }
+  }
+
+  // Dropdown schließen wenn außerhalb geklickt wird
+  document.addEventListener("click", function(event) {
+    const dropdown = document.getElementById("vocabDropdownMenu");
+    const button = document.getElementById("vocabDropdownBtn");
+    const arrow = document.getElementById("dropdownArrow");
+    
+    if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+      dropdown.classList.add("hidden");
+      arrow.style.transform = "rotate(0deg)";
+    }
+  });
+
   // Pfad-Breadcrumb anzeigen - KORRIGIERT
   function renderBreadcrumb(route) {
     const container = document.getElementById("breadcrumb");
@@ -288,7 +387,7 @@
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const menuWidth = 150; // ungefähre Breite des Menüs
-    const menuHeight = 120; // ungefähre Höhe des Menüs
+    const menuHeight = 160; // ungefähre Höhe des Menüs (erhöht wegen neuem Button)
     
     let left = event.pageX;
     let top = event.pageY;
@@ -370,7 +469,96 @@
       alert("Nur Vokabellisten können bearbeitet werden.");
     }
   }
-  
+
+  // NEU: Share-Funktionen
+  function shareItem() {
+    // Nur für Listen, nicht für Ordner
+    if (selectedItem.type === 0) {
+      document.getElementById("shareModal").classList.remove("hidden");
+      fetchShareId();
+    } else {
+      alert("Nur Vokabellisten können geteilt werden.");
+    }
+  }
+
+  function closeShareModal() {
+    document.getElementById("shareModal").classList.add("hidden");
+    // Reset modal state
+    document.getElementById("shareLoader").classList.remove("hidden");
+    document.getElementById("shareContent").classList.add("hidden");
+    document.getElementById("shareError").classList.add("hidden");
+  }
+
+  async function fetchShareId() {
+    const userName = localStorage.getItem("userName");
+    const password = localStorage.getItem("password");
+
+    try {
+      const res = await fetch(`https://blearnend.onrender.com/fetchid`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userName, 
+          password, 
+          route, 
+          lesson: selectedItem.name 
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      if (data.state === "success" && data.id) {
+        document.getElementById("shareLoader").classList.add("hidden");
+        document.getElementById("shareContent").classList.remove("hidden");
+        
+        // Set the share ID and link
+        document.getElementById("shareId").value = data.id;
+      } else {
+        throw new Error(data.message || 'Unbekannter Fehler beim Abrufen der ID');
+      }
+    } catch (err) {
+      console.error("Fehler beim Abrufen der Share-ID:", err);
+      document.getElementById("shareLoader").classList.add("hidden");
+      document.getElementById("shareError").classList.remove("hidden");
+    }
+  }
+
+  function retryFetchId() {
+    document.getElementById("shareError").classList.add("hidden");
+    document.getElementById("shareLoader").classList.remove("hidden");
+    fetchShareId();
+  }
+
+  function copyShareId() {
+    const shareId = document.getElementById("shareId");
+    shareId.select();
+    shareId.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+      document.execCommand('copy');
+      // Visual feedback
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Kopiert!';
+      btn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+      btn.classList.add('bg-green-500');
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('bg-green-500');
+        btn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+      }, 2000);
+    } catch (err) {
+      console.error('Kopieren fehlgeschlagen:', err);
+      alert('Kopieren fehlgeschlagen. Bitte manuell kopieren.');
+    }
+  }
+
   // Löschen
   async function confirmDelete() {
     if (!confirm(`Möchtest du "${selectedItem.name}" wirklich löschen?`)) return;
@@ -420,8 +608,21 @@
     }
   });
     
+  // Dropdown-Aktionen
   function createList() {
+    // Dropdown schließen
+    document.getElementById("vocabDropdownMenu").classList.add("hidden");
+    document.getElementById("dropdownArrow").style.transform = "rotate(0deg)";
+    
     window.location.href = `/createlist?route=${encodeURIComponent(route)}`;
+  }
+
+  function importList() {
+    // Dropdown schließen
+    document.getElementById("vocabDropdownMenu").classList.add("hidden");
+    document.getElementById("dropdownArrow").style.transform = "rotate(0deg)";
+    
+    window.location.href = `/importList?route=${encodeURIComponent(route)}`;
   }
     
   </script>

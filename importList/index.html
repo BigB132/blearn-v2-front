@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vokabelliste importieren – Blearn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
+    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-all">
+      Logout
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">📥 Vokabelliste importieren</h2>
+    
+    <!-- Import Formular -->
+    <div class="bg-white p-8 rounded-xl shadow-md max-w-2xl mx-auto">
+      
+      <!-- Name Feld -->
+      <div class="mb-6">
+        <label for="listNameInput" class="block text-sm font-medium text-gray-700 mb-2">
+          Name der Vokabelliste
+        </label>
+        <input 
+          id="listNameInput" 
+          type="text" 
+          placeholder="Name der importierten Liste" 
+          class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:text-gray-500" 
+          disabled
+        />
+        
+        <!-- Keep Name Checkbox -->
+        <div class="mt-3 flex items-center">
+          <input 
+            id="keepNameCheckbox" 
+            type="checkbox" 
+            checked 
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label for="keepNameCheckbox" class="ml-2 text-sm text-gray-700">
+            Namen automatisch übernehmen
+          </label>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">
+          Wenn aktiviert, wird der ursprüngliche Name der Liste verwendet
+        </p>
+      </div>
+
+      <!-- ID Feld -->
+      <div class="mb-8">
+        <label for="idInput" class="block text-sm font-medium text-gray-700 mb-2">
+          Listen-ID
+        </label>
+        <input 
+          id="idInput" 
+          type="text" 
+          placeholder="Gib die ID der zu importierenden Liste ein" 
+          class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          required
+        />
+        <p class="mt-1 text-xs text-gray-500">
+          Die eindeutige ID der Vokabelliste, die du importieren möchtest
+        </p>
+      </div>
+
+      <!-- Import Button -->
+      <div class="flex justify-between items-center">
+        <button 
+          onclick="goBack()" 
+          class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          ← Zurück
+        </button>
+        
+        <button 
+          id="importBtn" 
+          class="px-8 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all transform hover:scale-105 font-medium shadow-md"
+        >
+          📥 Liste importieren
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="bg-blue-50 p-4 rounded-lg mt-6 max-w-2xl mx-auto">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">
+            Hinweis zum Import
+          </h3>
+          <div class="mt-1 text-sm text-blue-700">
+            <p>Stelle sicher, dass du die korrekte Listen-ID verwendest. Die importierte Liste wird in deinem aktuellen Verzeichnis gespeichert.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center text-sm py-4 border-t mt-8 text-gray-500">
+    © 2025 Blearn. Alle Rechte vorbehalten.
+  </footer>
+
+  <!-- Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const params = new URLSearchParams(window.location.search);
+      const route = params.get("route");
+
+      const listNameInput = document.getElementById("listNameInput");
+      const keepNameCheckbox = document.getElementById("keepNameCheckbox");
+      const idInput = document.getElementById("idInput");
+      const importBtn = document.getElementById("importBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      // Checkbox Event Listener
+      keepNameCheckbox.addEventListener("change", () => {
+        if (keepNameCheckbox.checked) {
+          listNameInput.disabled = true;
+          listNameInput.classList.add("disabled:bg-gray-100", "disabled:text-gray-500");
+        } else {
+          listNameInput.disabled = false;
+          listNameInput.classList.remove("disabled:bg-gray-100", "disabled:text-gray-500");
+          listNameInput.focus();
+        }
+      });
+
+      // Import Button Event Listener
+      importBtn.addEventListener("click", async () => {
+        const id = idInput.value.trim();
+        
+        if (!id) {
+          alert("Bitte gib eine Listen-ID ein.");
+          idInput.focus();
+          return;
+        }
+
+        const userName = localStorage.getItem("userName");
+        const password = localStorage.getItem("password");
+        
+        if (!userName || !password) {
+          alert("Authentifizierungsfehler. Bitte melde dich erneut an.");
+          window.location.href = "/login";
+          return;
+        }
+
+        // Button während des Imports deaktivieren
+        importBtn.disabled = true;
+        importBtn.innerHTML = "⏳ Importiere...";
+        importBtn.classList.add("opacity-75", "cursor-not-allowed");
+
+        try {
+          const requestData = {
+            userName,
+            password,
+            route,
+            id,
+            keepName: keepNameCheckbox.checked
+          };
+
+          // Wenn keepName false ist, dann auch den Namen mitschicken
+          if (!keepNameCheckbox.checked) {
+            const customName = listNameInput.value.trim();
+            if (!customName) {
+              alert("Bitte gib einen Namen für die Liste ein oder aktiviere 'Namen automatisch übernehmen'.");
+              importBtn.disabled = false;
+              importBtn.innerHTML = "📥 Liste importieren";
+              importBtn.classList.remove("opacity-75", "cursor-not-allowed");
+              listNameInput.focus();
+              return;
+            }
+            requestData.name = customName;
+          }
+
+          const res = await fetch("https://blearnend.onrender.com/importlist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData)
+          });
+
+          const data = await res.json();
+          
+          if (data.state === "success") {
+            alert("Liste erfolgreich importiert!");
+            window.location.href = `/lernen?route=${encodeURIComponent(route)}`;
+          } else {
+            alert(`Fehler beim Importieren: ${data.message || 'Unbekannter Fehler'}`);
+          }
+        } catch (err) {
+          console.error("Import fehlgeschlagen:", err);
+          alert(`Verbindung zum Server fehlgeschlagen: ${err.message}`);
+        } finally {
+          // Button wieder aktivieren
+          importBtn.disabled = false;
+          importBtn.innerHTML = "📥 Liste importieren";
+          importBtn.classList.remove("opacity-75", "cursor-not-allowed");
+        }
+      });
+
+      // Logout Button Event Listener
+      logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "/login";
+      });
+
+      // Enter-Taste für ID-Input
+      idInput.addEventListener("keyup", (event) => {
+        if (event.key === "Enter") {
+          importBtn.click();
+        }
+      });
+
+      // Enter-Taste für Name-Input (falls aktiviert)
+      listNameInput.addEventListener("keyup", (event) => {
+        if (event.key === "Enter" && !listNameInput.disabled) {
+          importBtn.click();
+        }
+      });
+
+      // Authentifizierung prüfen
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+
+      if (!userName || !password) {
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://blearnend.onrender.com/checkData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password })
+        });
+
+        const data = await res.json();
+        if (data.state === "error") {
+          localStorage.clear();
+          window.location.href = "/login";
+        }
+      } catch (err) {
+        console.error("Authentifizierung fehlgeschlagen:", err);
+        // Bei Netzwerkfehlern trotzdem weitermachen
+      }
+    });
+
+    // Zurück-Funktion
+    function goBack() {
+      const params = new URLSearchParams(window.location.search);
+      const route = params.get("route");
+      window.location.href = `/lernen?route=${encodeURIComponent(route)}`;
+    }
+  </script>
+</body>
+</html>
