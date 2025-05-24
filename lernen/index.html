@@ -5,82 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lernen</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col transition-colors duration-300">
+
+  <!-- Dark Mode Dropdown -->
+  <div class="fixed bottom-6 right-6">
+    <div class="relative">
+      <button id="themeToggle" class="bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 hover:shadow-xl transition-all duration-300 border dark:border-gray-700">
+        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+      </button>
+      <div id="themeDropdown" class="absolute bottom-14 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-lg py-2 min-w-[140px] border dark:border-gray-700 opacity-0 invisible transform scale-95 transition-all duration-200">
+        <button data-theme="system" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          System Default
+        </button>
+        <button data-theme="light" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          Light
+        </button>
+        <button data-theme="dark" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+          Dark
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
-    <a href="/dashboard" class="text-sm text-blue-600 hover:underline">Zurück zum Dashboard</a>
+  <header class="bg-white dark:bg-gray-800 shadow-md py-4 px-6 flex justify-between items-center transition-colors duration-300">
+    <h1 class="text-xl font-bold text-blue-700 dark:text-blue-400">Blearn</h1>
+    <a href="/dashboard" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Zurück zum Dashboard</a>
   </header>
   
   <!-- Modal für Ordner erstellen -->
   <div id="folderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg p-6 shadow-lg w-80">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">📁 Ordner erstellen</h3>
-      <input id="folderNameInput" type="text" placeholder="Ordnername" class="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-80 transition-colors duration-300">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">📁 Ordner erstellen</h3>
+      <input id="folderNameInput" type="text" placeholder="Ordnername" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
       <div class="flex justify-end space-x-2">
-        <button onclick="closeFolderModal()" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-800">Abbrechen</button>
-        <button onclick="submitFolder()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Erstellen</button>
+        <button onclick="closeFolderModal()" class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">Abbrechen</button>
+        <button onclick="submitFolder()" class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded">Erstellen</button>
       </div>
     </div>
   </div>
   
   <!-- Kontextmenü -->
-  <div id="contextMenu" class="absolute bg-white border rounded shadow-lg hidden z-50">
-    <button onclick="openRenameModal()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Umbenennen</button>
-    <button onclick="editList()" class="block w-full px-4 py-2 text-left hover:bg-gray-100">Bearbeiten</button>
-    <button onclick="shareItem()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 text-blue-600">Teilen</button>
-    <button onclick="confirmDelete()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-500">Löschen</button>
+  <div id="contextMenu" class="absolute bg-white dark:bg-gray-800 border dark:border-gray-600 rounded shadow-lg hidden z-50 transition-colors duration-300">
+    <button onclick="openRenameModal()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">Umbenennen</button>
+    <button onclick="editList()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">Bearbeiten</button>
+    <button onclick="shareItem()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400">Teilen</button>
+    <button onclick="confirmDelete()" class="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500 dark:text-red-400">Löschen</button>
   </div>
 
   <!-- Umbenennen Modal -->
   <div id="renameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded shadow w-80">
-      <h3 class="text-lg font-bold mb-4">✏️ Umbenennen</h3>
-      <input id="renameInput" type="text" class="w-full border px-3 py-2 mb-4" />
+    <div class="bg-white dark:bg-gray-800 p-6 rounded shadow w-80 transition-colors duration-300">
+      <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white">✏️ Umbenennen</h3>
+      <input id="renameInput" type="text" class="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 mb-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
       <div class="flex justify-end space-x-2">
-        <button onclick="closeRenameModal()" class="px-3 py-2 text-sm text-gray-600">Abbrechen</button>
-        <button onclick="submitRename()" class="bg-blue-500 text-white px-4 py-2 rounded">Speichern</button>
+        <button onclick="closeRenameModal()" class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">Abbrechen</button>
+        <button onclick="submitRename()" class="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded">Speichern</button>
       </div>
     </div>
   </div>
 
   <!-- Share Modal -->
   <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg p-6 shadow-lg w-96">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">🔗 Teilen</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-96 transition-colors duration-300">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">🔗 Teilen</h3>
       
       <div id="shareLoader" class="flex justify-center items-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-t-4 border-blue-500 border-opacity-50"></div>
-        <span class="ml-2 text-gray-600">ID wird abgerufen...</span>
+        <span class="ml-2 text-gray-600 dark:text-gray-400">ID wird abgerufen...</span>
       </div>
       
       <div id="shareContent" class="hidden">
-        <p class="text-gray-600 mb-4">Teile diese Vokabelliste mit anderen:</p>
-        <div class="bg-gray-50 p-3 rounded border mb-4">
-          <label class="text-sm text-gray-500 block mb-1">Share-ID:</label>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">Teile diese Vokabelliste mit anderen:</p>
+        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded border dark:border-gray-600 mb-4">
+          <label class="text-sm text-gray-500 dark:text-gray-400 block mb-1">Share-ID:</label>
           <div class="flex items-center space-x-2">
-            <input id="shareId" type="text" readonly class="flex-1 bg-transparent border-none focus:outline-none font-mono text-sm" />
-            <button onclick="copyShareId()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+            <input id="shareId" type="text" readonly class="flex-1 bg-transparent border-none focus:outline-none font-mono text-sm text-gray-800 dark:text-gray-200" />
+            <button onclick="copyShareId()" class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
               📋 Kopieren
             </button>
           </div>
         </div>
-        <p class="text-xs text-gray-500 mb-4">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
           Andere können mit dieser ID auf deine Vokabelliste zugreifen.
         </p>
       </div>
       
       <div id="shareError" class="hidden text-center py-4">
-        <p class="text-red-500 mb-2">Fehler beim Abrufen der Share-ID</p>
-        <button onclick="retryFetchId()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+        <p class="text-red-500 dark:text-red-400 mb-2">Fehler beim Abrufen der Share-ID</p>
+        <button onclick="retryFetchId()" class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
           Erneut versuchen
         </button>
       </div>
       
       <div class="flex justify-end space-x-2 mt-4">
-        <button onclick="closeShareModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Schließen</button>
+        <button onclick="closeShareModal()" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">Schließen</button>
       </div>
     </div>
   </div>
@@ -88,13 +124,13 @@
   <!-- Main -->
   <main class="flex-1 p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-2xl font-bold text-gray-800">📂 Deine Vokabellisten</h2>
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-white">📂 Deine Vokabellisten</h2>
       <div class="space-x-2 flex items-center">
-        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow" onclick="createFolder()">📁 Ordner erstellen</button>
+        <button class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded shadow" onclick="createFolder()">📁 Ordner erstellen</button>
         
         <!-- Dropdown für Vokabelliste -->
         <div class="relative">
-          <button id="vocabDropdownBtn" onclick="toggleVocabDropdown()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow flex items-center space-x-2 transition-all duration-200">
+          <button id="vocabDropdownBtn" onclick="toggleVocabDropdown()" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-4 py-2 rounded shadow flex items-center space-x-2 transition-all duration-200">
             <span>➕ Neue Vokabelliste</span>
             <svg id="dropdownArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -102,23 +138,23 @@
           </button>
           
           <!-- Dropdown Menu -->
-          <div id="vocabDropdownMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-40 overflow-hidden">
+          <div id="vocabDropdownMenu" class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hidden z-40 overflow-hidden transition-colors duration-300">
             <div class="py-1">
-              <button onclick="createList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150">
+              <button onclick="createList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-400 transition-colors duration-150">
                 <span class="mr-3 text-lg">📝</span>
                 <div>
                   <div class="font-medium">Erstellen</div>
-                  <div class="text-sm text-gray-500">Neue Vokabelliste anlegen</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Neue Vokabelliste anlegen</div>
                 </div>
               </button>
               
-              <hr class="border-gray-100">
+              <hr class="border-gray-100 dark:border-gray-600">
               
-              <button onclick="importList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150">
+              <button onclick="importList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-400 transition-colors duration-150">
                 <span class="mr-3 text-lg">📥</span>
                 <div>
                   <div class="font-medium">Importieren</div>
-                  <div class="text-sm text-gray-500">Vokabelliste hochladen</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Vokabelliste hochladen</div>
                 </div>
               </button>
             </div>
@@ -128,7 +164,7 @@
     </div>
 
     <!-- Breadcrumb -->
-    <nav id="breadcrumb" class="text-sm text-blue-600 mb-4 flex flex-wrap gap-1 items-center"></nav>
+    <nav id="breadcrumb" class="text-sm text-blue-600 dark:text-blue-400 mb-4 flex flex-wrap gap-1 items-center"></nav>
 
     <!-- Loader -->
     <div id="loader" class="flex justify-center items-center h-40">
@@ -136,14 +172,14 @@
     </div>
 
     <!-- Leere-Nachricht -->
-    <p id="emptyMessage" class="hidden text-center text-gray-600 mt-8">Du hast noch keine Vokabellisten oder Ordner erstellt.</p>
+    <p id="emptyMessage" class="hidden text-center text-gray-600 dark:text-gray-400 mt-8">Du hast noch keine Vokabellisten oder Ordner erstellt.</p>
 
     <!-- List container -->
     <ul id="lessonList" class="space-y-4 hidden"></ul>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white text-center text-sm py-4 border-t text-gray-500">
+  <footer class="bg-white dark:bg-gray-800 text-center text-sm py-4 border-t dark:border-gray-700 text-gray-500 dark:text-gray-400 transition-colors duration-300">
     © 2025 Blearn
   </footer>
 
@@ -152,14 +188,134 @@
   // API-Basis-URL - ändern Sie diese entsprechend Ihrer Backend-Konfiguration
   const API_BASE_URL = 'https://blearnend.onrender.com';
 
+  // Dark mode functionality - same as dashboard
+  class ThemeManager {
+    constructor() {
+      this.init();
+      this.setupEventListeners();
+    }
+
+    init() {
+      // Get theme from localStorage or default to 'system'
+      const savedTheme = localStorage.getItem('theme') || 'system';
+      this.applyTheme(savedTheme);
+      this.updateActiveButton(savedTheme);
+    }
+
+    applyTheme(theme) {
+      const html = document.documentElement;
+      
+      if (theme === 'system') {
+        // Use system preference
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        html.classList.toggle('dark', systemDark);
+      } else if (theme === 'dark') {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('theme', theme);
+    }
+
+    updateActiveButton(activeTheme) {
+      const buttons = document.querySelectorAll('[data-theme]');
+      buttons.forEach(btn => {
+        const theme = btn.getAttribute('data-theme');
+        if (theme === activeTheme) {
+          btn.classList.add('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+        } else {
+          btn.classList.remove('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+        }
+      });
+    }
+
+    setupEventListeners() {
+      const toggle = document.getElementById('themeToggle');
+      const dropdown = document.getElementById('themeDropdown');
+      const buttons = document.querySelectorAll('[data-theme]');
+
+      // Toggle dropdown
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = !dropdown.classList.contains('opacity-0');
+        
+        if (isVisible) {
+          dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+          dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+        } else {
+          dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+          dropdown.classList.add('opacity-100', 'visible', 'scale-100');
+        }
+      });
+
+      // Theme selection
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const theme = btn.getAttribute('data-theme');
+          this.applyTheme(theme);
+          this.updateActiveButton(theme);
+          
+          // Close dropdown
+          dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+          dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+        });
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+          dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+        }
+      });
+
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const currentTheme = localStorage.getItem('theme') || 'system';
+        if (currentTheme === 'system') {
+          this.applyTheme('system');
+        }
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
+    // Initialize theme manager
+    new ThemeManager();
+
     const userName = localStorage.getItem("userName");
     const password = localStorage.getItem("password");
-
+      
     if (!userName || !password) {
-      window.location.href = "./login";
+      window.location.href = "/login";
       return;
     }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/checkData`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password })
+      });
+
+      const data = await res.json();
+
+      if (data.state === "error") {
+        localStorage.removeItem("userName");
+        localStorage.removeItem("password");
+        window.location.href = "/login";
+      } else if (data.state === "success" && data.sessionExpired === "true") {
+        window.location.href = "https://blearn.netlify.app/ad";
+      } else {
+        console.log("Successful login");
+      }
+    } catch (err) {
+      console.error("Fehler beim Prüfen der Daten:", err);
+      window.location.href = "/login";
+    }
+
 
     const params = new URLSearchParams(window.location.search);
     route = params.get("route") || "/";
@@ -219,7 +375,7 @@
         }
         
         const item = document.createElement("li");
-        item.className = "bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer hover:bg-blue-50";
+        item.className = "bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700";
         
         // Event-Handler mit Fehlerbehandlung
         item.onclick = (e) => {
@@ -237,8 +393,8 @@
         const icon = lesson.type === 0 ? "📗" : "📁";
         item.innerHTML = `
           <div class="flex justify-between items-center">
-            <span>${icon} ${lesson.name}</span>
-            <button onclick="openContextMenu(event, '${lesson.name.replace(/'/g, "\\'")}', ${lesson.type})" class="text-gray-500 hover:text-gray-700">⋮</button>
+            <span class="text-gray-800 dark:text-gray-200">${icon} ${lesson.name}</span>
+            <button onclick="openContextMenu(event, '${lesson.name.replace(/'/g, "\\'")}', ${lesson.type})" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">⋮</button>
           </div>
         `;
 
@@ -252,8 +408,8 @@
       document.getElementById("loader").innerHTML = `
         <div class="text-center">
           <p class="text-red-500 text-lg mb-2">Fehler beim Laden der Daten</p>
-          <p class="text-gray-600 mb-4">${err.message || 'Verbindung zum Server fehlgeschlagen'}</p>
-          <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">${err.message || 'Verbindung zum Server fehlgeschlagen'}</p>
+          <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded">
             Neu laden
           </button>
         </div>
