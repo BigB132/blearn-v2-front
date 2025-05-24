@@ -48,6 +48,38 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Set lesson title
+      
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+      
+      if (!userName || !password) {
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://blearnend.onrender.com/checkData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password })
+        });
+        
+        const data = await res.json();
+        
+        if (data.state === "error") {
+          localStorage.removeItem("userName");
+          localStorage.removeItem("password");
+          window.location.href = "/login";
+        } else if (data.state === "success" && data.sessionExpired === "true") {
+          window.location.href = "https://blearn.netlify.app/ad";
+        } else {
+          console.log("Successful login");
+        }
+      } catch (err) {
+        console.error("Fehler beim Prüfen der Daten:", err);
+        window.location.href = "/login";
+      }
+      
       if (lesson) {
         document.getElementById('lessonTitle').textContent = lesson;
       }

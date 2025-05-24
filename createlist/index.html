@@ -5,60 +5,191 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vokabelliste erstellen – Blearn</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col">
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-gray-900 dark:to-gray-800 flex flex-col transition-colors duration-300">
+
+  <!-- Dark Mode Dropdown -->
+  <div class="fixed bottom-6 right-6">
+    <div class="relative">
+      <button id="themeToggle" class="bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 hover:shadow-xl transition-all duration-300 border dark:border-gray-700">
+        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+      </button>
+      <div id="themeDropdown" class="absolute bottom-14 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-lg py-2 min-w-[140px] border dark:border-gray-700 opacity-0 invisible transform scale-95 transition-all duration-200">
+        <button data-theme="system" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          System Default
+        </button>
+        <button data-theme="light" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          Light
+        </button>
+        <button data-theme="dark" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+          Dark
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-blue-700">Blearn</h1>
-    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-all">
+  <header class="bg-white dark:bg-gray-800 shadow-md py-4 px-6 flex justify-between items-center transition-colors duration-300">
+    <h1 class="text-xl font-bold text-blue-700 dark:text-blue-400">Blearn</h1>
+    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all">
       Logout
     </button>
   </header>
 
   <!-- Main Content -->
   <main class="flex-1 p-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Vokabelliste erstellen</h2>
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 transition-colors duration-300">Vokabelliste erstellen</h2>
     
     <!-- Listenname -->
-    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <input id="listNameInput" type="text" placeholder="Name der Vokabelliste" class="w-full border p-2 rounded-md" />
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 mb-6 border dark:border-gray-700 transition-all duration-300">
+      <input id="listNameInput" type="text" placeholder="Name der Vokabelliste" class="w-full border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
     </div>
 
-
     <!-- Eingabe -->
-    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 mb-6 border dark:border-gray-700 transition-all duration-300">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input id="wordInput" type="text" placeholder="Vokabel" class="border p-2 rounded-md" />
-        <input id="translationInput" type="text" placeholder="Übersetzung" class="border p-2 rounded-md" />
+        <input id="wordInput" type="text" placeholder="Vokabel" class="border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
+        <input id="translationInput" type="text" placeholder="Übersetzung" class="border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
       </div>
-      <button id="addBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Hinzufügen</button>
+      <button id="addBtn" class="mt-4 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-300">Hinzufügen</button>
     </div>
 
     <!-- Liste -->
-    <div class="bg-white p-6 rounded-xl shadow-md">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 border dark:border-gray-700 transition-all duration-300">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr>
-            <th class="pb-2">Vokabel</th>
-            <th class="pb-2">Übersetzung</th>
-            <th class="pb-2">Aktionen</th>
+            <th class="pb-2 text-gray-900 dark:text-white transition-colors duration-300">Vokabel</th>
+            <th class="pb-2 text-gray-900 dark:text-white transition-colors duration-300">Übersetzung</th>
+            <th class="pb-2 text-gray-900 dark:text-white transition-colors duration-300">Aktionen</th>
           </tr>
         </thead>
         <tbody id="vocabList"></tbody>
       </table>
-      <button id="saveBtn" class="mt-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Liste speichern</button>
+      <button id="saveBtn" class="mt-6 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-800 transition-all duration-300">Liste speichern</button>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white text-center text-sm py-4 border-t mt-8 text-gray-500">
+  <footer class="bg-white dark:bg-gray-800 text-center text-sm py-4 border-t dark:border-gray-700 mt-8 text-gray-500 dark:text-gray-400 transition-colors duration-300">
     © 2025 Lernplattform. Alle Rechte vorbehalten.
   </footer>
 
   <!-- Script -->
   <script>
+    // Dark mode functionality with localStorage
+    class ThemeManager {
+      constructor() {
+        this.init();
+        this.setupEventListeners();
+      }
+
+      init() {
+        // Get theme from localStorage or default to 'system'
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        this.applyTheme(savedTheme);
+        this.updateActiveButton(savedTheme);
+      }
+
+      applyTheme(theme) {
+        const html = document.documentElement;
+        
+        if (theme === 'system') {
+          // Use system preference
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          html.classList.toggle('dark', systemDark);
+        } else if (theme === 'dark') {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('theme', theme);
+      }
+
+      updateActiveButton(activeTheme) {
+        const buttons = document.querySelectorAll('[data-theme]');
+        buttons.forEach(btn => {
+          const theme = btn.getAttribute('data-theme');
+          if (theme === activeTheme) {
+            btn.classList.add('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+          } else {
+            btn.classList.remove('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+          }
+        });
+      }
+
+      setupEventListeners() {
+        const toggle = document.getElementById('themeToggle');
+        const dropdown = document.getElementById('themeDropdown');
+        const buttons = document.querySelectorAll('[data-theme]');
+
+        // Toggle dropdown
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isVisible = !dropdown.classList.contains('opacity-0');
+          
+          if (isVisible) {
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          } else {
+            dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.add('opacity-100', 'visible', 'scale-100');
+          }
+        });
+
+        // Theme selection
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            this.applyTheme(theme);
+            this.updateActiveButton(theme);
+            
+            // Close dropdown
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          }
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+          const currentTheme = localStorage.getItem('theme') || 'system';
+          if (currentTheme === 'system') {
+            this.applyTheme('system');
+          }
+        });
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
+      // Initialize theme manager
+      new ThemeManager();
+
       const params = new URLSearchParams(window.location.search);
       const route = params.get("route");
 
@@ -75,11 +206,11 @@
         vocabList.innerHTML = "";
         entries.forEach((entry, index) => {
           vocabList.innerHTML += `
-            <tr class="border-t">
-              <td><input type="text" class="w-full p-1 border rounded" value="${entry.word}" onchange="updateWord(${index}, this.value)" /></td>
-              <td><input type="text" class="w-full p-1 border rounded" value="${entry.translation}" onchange="updateTranslation(${index}, this.value)" /></td>
+            <tr class="border-t dark:border-gray-600">
+              <td><input type="text" class="w-full p-1 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300" value="${entry.word}" onchange="updateWord(${index}, this.value)" /></td>
+              <td><input type="text" class="w-full p-1 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300" value="${entry.translation}" onchange="updateTranslation(${index}, this.value)" /></td>
               <td>
-                <button onclick="deleteEntry(${index})" class="text-red-500 hover:underline">Löschen</button>
+                <button onclick="deleteEntry(${index})" class="text-red-500 dark:text-red-400 hover:underline transition-colors duration-300">Löschen</button>
               </td>
             </tr>
           `;
@@ -168,6 +299,8 @@
       if (data.state === "error") {
         localStorage.clear();
         window.location.href = "/login";
+      } else if (data.state === "success" && data.sessionExpired === "true") {
+        window.location.href = "https://blearn.netlify.app/ad";
       }
     });
   </script>

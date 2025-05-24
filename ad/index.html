@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>iFrame mit Benutzername</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="mainFrame" src=""></iframe>
+
+  <script>
+    const userName = localStorage.getItem('userName');
+    if (userName) {
+      document.getElementById('mainFrame').src = `https://blearnend.onrender.com/ad/${encodeURIComponent(userName)}`;
+    } else {
+      // Optional: Wenn kein userName vorhanden ist, zeige einen Platzhalter oder eine Meldung
+      document.body.innerHTML = "<h1 style='text-align:center;margin-top:20%;font-family:sans-serif;'>Kein Benutzername im localStorage gefunden.</h1>";
+    }
+  </script>
+</body>
+</html>

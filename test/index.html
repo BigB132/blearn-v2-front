@@ -156,6 +156,26 @@
       }
     }
 
+    // Session expiration check function
+    async function checkData() {
+      try {
+        const response = await fetch('/checkData', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.state === 'success' && data.sessionExpired === 'true') {
+          window.location.href = 'https://blearn.netlify.app/ad';
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
+    }
+
     // Initialize theme manager when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
       new ThemeManager();
