@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tabelle erstellen – Blearn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-gray-900 dark:to-gray-800 flex flex-col transition-colors duration-300">
+
+  <!-- Dark Mode Dropdown -->
+  <div class="fixed bottom-6 right-6">
+    <div class="relative">
+      <button id="themeToggle" class="bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 hover:shadow-xl transition-all duration-300 border dark:border-gray-700">
+        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+      </button>
+      <div id="themeDropdown" class="absolute bottom-14 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-lg py-2 min-w-[140px] border dark:border-gray-700 opacity-0 invisible transform scale-95 transition-all duration-200">
+        <button data-theme="system" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          System Default
+        </button>
+        <button data-theme="light" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          Light
+        </button>
+        <button data-theme="dark" class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+          Dark
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-md py-4 px-6 flex justify-between items-center transition-colors duration-300">
+    <h1 class="text-xl font-bold text-blue-700 dark:text-blue-400">Blearn</h1>
+    <button id="logoutBtn" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all">
+      Logout
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 transition-colors duration-300">Tabelle erstellen</h2>
+    
+    <!-- Tabellenname -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 mb-6 border dark:border-gray-700 transition-all duration-300">
+      <input id="tableNameInput" type="text" placeholder="Name der Tabelle" class="w-full border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
+    </div>
+
+    <!-- Table Setup Controls -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 mb-6 border dark:border-gray-700 transition-all duration-300">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Tabellenstruktur</h3>
+      
+      <!-- Column Management -->
+      <div class="mb-4">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Spalten verwalten</h4>
+        <div class="flex gap-2 mb-2">
+          <input id="columnInput" type="text" placeholder="Spaltenname" class="flex-1 border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
+          <button id="addColumnBtn" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-300">+ Spalte</button>
+        </div>
+        <div id="columnsList" class="flex flex-wrap gap-2"></div>
+      </div>
+      
+      <!-- Row Management -->
+      <div class="mb-4">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Zeilen verwalten</h4>
+        <div class="flex gap-2 mb-2">
+          <input id="rowInput" type="text" placeholder="Zeilenname" class="flex-1 border dark:border-gray-600 p-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300" />
+          <button id="addRowBtn" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-800 transition-all duration-300">+ Zeile</button>
+        </div>
+        <div id="rowsList" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Dynamic Table -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md dark:shadow-gray-900/20 mb-6 border dark:border-gray-700 transition-all duration-300">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Ihre Tabelle</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="dynamicTable">
+          <thead>
+            <tr>
+              <th class="p-3 border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"></th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+        Fügen Sie Spalten und Zeilen hinzu, um Ihre Tabelle zu erstellen. Klicken Sie in die Zellen, um Inhalte einzugeben.
+      </div>
+      <button id="saveBtn" class="mt-6 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-800 transition-all duration-300">Tabelle speichern</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white dark:bg-gray-800 text-center text-sm py-4 border-t dark:border-gray-700 mt-8 text-gray-500 dark:text-gray-400 transition-colors duration-300">
+    © 2025 Lernplattform. Alle Rechte vorbehalten.
+  </footer>
+
+  <!-- Script -->
+  <script>
+    // Dark mode functionality
+    class ThemeManager {
+      constructor() {
+        this.init();
+        this.setupEventListeners();
+      }
+
+      init() {
+        const savedTheme = this.getSavedTheme() || 'system';
+        this.applyTheme(savedTheme);
+        this.updateActiveButton(savedTheme);
+      }
+
+      getSavedTheme() {
+        try {
+          return window.theme || 'system';
+        } catch (e) {
+          return 'system';
+        }
+      }
+
+      saveTheme(theme) {
+        try {
+          window.theme = theme;
+        } catch (e) {
+          // Silent fail if unable to save
+        }
+      }
+
+      applyTheme(theme) {
+        const html = document.documentElement;
+        
+        if (theme === 'system') {
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          html.classList.toggle('dark', systemDark);
+        } else if (theme === 'dark') {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        
+        this.saveTheme(theme);
+      }
+
+      updateActiveButton(activeTheme) {
+        const buttons = document.querySelectorAll('[data-theme]');
+        buttons.forEach(btn => {
+          const theme = btn.getAttribute('data-theme');
+          if (theme === activeTheme) {
+            btn.classList.add('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+          } else {
+            btn.classList.remove('bg-blue-100', 'dark:bg-blue-900', 'text-blue-600', 'dark:text-blue-400');
+          }
+        });
+      }
+
+      setupEventListeners() {
+        const toggle = document.getElementById('themeToggle');
+        const dropdown = document.getElementById('themeDropdown');
+        const buttons = document.querySelectorAll('[data-theme]');
+
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isVisible = !dropdown.classList.contains('opacity-0');
+          
+          if (isVisible) {
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          } else {
+            dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.add('opacity-100', 'visible', 'scale-100');
+          }
+        });
+
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            this.applyTheme(theme);
+            this.updateActiveButton(theme);
+            
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          });
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+          }
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+          const currentTheme = this.getSavedTheme() || 'system';
+          if (currentTheme === 'system') {
+            this.applyTheme('system');
+          }
+        });
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Initialize theme manager
+      new ThemeManager();
+
+      const params = new URLSearchParams(window.location.search);
+      const route = params.get("route");
+
+      const columnInput = document.getElementById("columnInput");
+      const addColumnBtn = document.getElementById("addColumnBtn");
+      const rowInput = document.getElementById("rowInput");
+      const addRowBtn = document.getElementById("addRowBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const dynamicTable = document.getElementById("dynamicTable");
+      const columnsList = document.getElementById("columnsList");
+      const rowsList = document.getElementById("rowsList");
+
+      let columns = [];
+      let rows = [];
+      let tableData = []; // Changed from object to array
+
+      // Helper function to get array index from row and column indices
+      function getTableIndex(rowIndex, columnIndex) {
+        return rowIndex * columns.length + columnIndex;
+      }
+
+      // Helper function to get value from tableData array
+      function getTableValue(rowIndex, columnIndex) {
+        const index = getTableIndex(rowIndex, columnIndex);
+        return tableData[index] || '';
+      }
+
+      // Helper function to set value in tableData array
+      function setTableValue(rowIndex, columnIndex, value) {
+        const index = getTableIndex(rowIndex, columnIndex);
+        // Ensure array is large enough
+        while (tableData.length <= index) {
+          tableData.push('');
+        }
+        tableData[index] = value;
+      }
+
+      function updateColumnsList() {
+        columnsList.innerHTML = '';
+        columns.forEach((column, index) => {
+          const tag = document.createElement('span');
+          tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+          tag.innerHTML = `
+            ${column}
+            <button onclick="removeColumn(${index})" class="ml-2 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100">×</button>
+          `;
+          columnsList.appendChild(tag);
+        });
+      }
+
+      function updateRowsList() {
+        rowsList.innerHTML = '';
+        rows.forEach((row, index) => {
+          const tag = document.createElement('span');
+          tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+          tag.innerHTML = `
+            ${row}
+            <button onclick="removeRow(${index})" class="ml-2 text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100">×</button>
+          `;
+          rowsList.appendChild(tag);
+        });
+      }
+
+      function renderTable() {
+        const thead = dynamicTable.querySelector('thead tr');
+        const tbody = dynamicTable.querySelector('tbody');
+        
+        // Clear existing content
+        thead.innerHTML = '<th class="p-3 border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"></th>';
+        tbody.innerHTML = '';
+        
+        // Add column headers
+        columns.forEach(column => {
+          const th = document.createElement('th');
+          th.className = 'p-3 border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300';
+          th.textContent = column;
+          thead.appendChild(th);
+        });
+
+        // Add rows
+        rows.forEach((row, rowIndex) => {
+          const tr = document.createElement('tr');
+          
+          // Row header
+          const th = document.createElement('th');
+          th.className = 'p-3 border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300';
+          th.textContent = row;
+          tr.appendChild(th);
+          
+          // Data cells
+          columns.forEach((column, columnIndex) => {
+            const td = document.createElement('td');
+            td.className = 'p-3 border dark:border-gray-600';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'w-full p-2 border-0 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded';
+            input.placeholder = 'Eingabe...';
+            
+            input.value = getTableValue(rowIndex, columnIndex);
+            
+            input.addEventListener('input', (e) => {
+              setTableValue(rowIndex, columnIndex, e.target.value);
+            });
+            
+            td.appendChild(input);
+            tr.appendChild(td);
+          });
+          
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Add column
+      addColumnBtn.addEventListener("click", () => {
+        const column = columnInput.value.trim();
+        if (column && !columns.includes(column)) {
+          columns.push(column);
+          columnInput.value = "";
+          updateColumnsList();
+          renderTable();
+        }
+      });
+
+      // Add row
+      addRowBtn.addEventListener("click", () => {
+        const row = rowInput.value.trim();
+        if (row && !rows.includes(row)) {
+          rows.push(row);
+          rowInput.value = "";
+          updateRowsList();
+          renderTable();
+        }
+      });
+
+      // Allow Enter key
+      columnInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") addColumnBtn.click();
+      });
+
+      rowInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") addRowBtn.click();
+      });
+
+      // Global functions for removing columns and rows
+      window.removeColumn = function(columnIndex) {
+        // Create new tableData array without the removed column
+        const newTableData = [];
+        for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+          for (let colIndex = 0; colIndex < columns.length; colIndex++) {
+            if (colIndex !== columnIndex) {
+              const oldIndex = getTableIndex(rowIndex, colIndex);
+              newTableData.push(tableData[oldIndex] || '');
+            }
+          }
+        }
+        
+        columns.splice(columnIndex, 1);
+        tableData = newTableData;
+        
+        updateColumnsList();
+        renderTable();
+      };
+
+      window.removeRow = function(rowIndex) {
+        // Create new tableData array without the removed row
+        const newTableData = [];
+        for (let rIndex = 0; rIndex < rows.length; rIndex++) {
+          if (rIndex !== rowIndex) {
+            for (let colIndex = 0; colIndex < columns.length; colIndex++) {
+              const oldIndex = getTableIndex(rIndex, colIndex);
+              newTableData.push(tableData[oldIndex] || '');
+            }
+          }
+        }
+        
+        rows.splice(rowIndex, 1);
+        tableData = newTableData;
+        
+        updateRowsList();
+        renderTable();
+      };
+
+      saveBtn.addEventListener("click", async () => {
+        
+        const userName = localStorage.getItem("userName");
+        const password = localStorage.getItem("password");
+        
+        const tableNameInput = document.getElementById("tableNameInput");
+        const tableName = tableNameInput.value.trim();
+
+        if (!tableName) {
+          alert("Bitte geben Sie einen Namen für die Tabelle ein.");
+          return;
+        }
+
+        if (columns.length === 0 || rows.length === 0) {
+          alert("Bitte fügen Sie mindestens eine Spalte und eine Zeile hinzu.");
+          return;
+        }
+
+        // Format data for saving - tableData is now an array of strings
+        const saveData = {
+          columns: columns,
+          rows: rows,
+          tableData: tableData // This is now an array of strings
+        };
+
+        console.log("Saving table data:", saveData);
+
+        try {
+          const res = await fetch("https://verbose-palm-tree-g449pxr7gjg9396pr-3000.app.github.dev/savetable", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              userName, 
+              password, 
+              tableData: saveData, 
+              route, 
+              name: tableName 
+            })
+          });
+
+          const data = await res.json();
+          if (data.state === "success") {
+            alert("Tabelle erfolgreich gespeichert!");
+            window.location.href = `https://blearn.netlify.app/lernen?route=${route}`;
+          } else {
+            alert("Fehler beim Speichern.");
+          }
+        } catch (err) {
+          console.error("Speichern fehlgeschlagen:", err);
+          alert("Verbindung zum Server fehlgeschlagen: " + err);
+        }
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        try {
+          window.location.href = "/logout";
+        } catch (e) {
+          console.log("Logout would happen here");
+        }
+      });
+
+      // Simple authentication check (adapted for artifact environment)
+      const userName = window.userName || '';
+      const password = window.password || '';
+      
+      if (!userName || !password) {
+        console.log("Authentication would be checked here");
+      }
+
+      try {
+        console.log("Authentication check would happen here");
+      } catch (err) {
+        console.error("Fehler beim Prüfen der Daten:", err);
+      }
+    });
+  </script>
+</body>
+</html>

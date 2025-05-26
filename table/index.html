@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabellenquiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center py-8">
+  <div class="w-full max-w-6xl px-4">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2" id="lessonTitle">Tabellenquiz</h1>
+      <a href="/lernen" class="text-blue-400 hover:underline">Zurück zur Übersicht</a>
+    </header>
+
+    <!-- Quiz Table -->
+    <div class="overflow-x-auto mb-8">
+      <table class="w-full rounded-lg overflow-hidden">
+        <thead class="bg-gray-700" id="tableHeader">
+          <!-- Table headers will be inserted here by JavaScript -->
+        </thead>
+        <tbody id="tableBody" class="bg-gray-800 divide-y divide-gray-700">
+          <!-- Table rows will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Check Answers Button -->
+    <div class="text-center">
+      <button onclick="checkAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+        Antworten überprüfen
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Get route and lesson from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const route = urlParams.get('route') || '/';
+    const lesson = urlParams.get('lesson');
+    
+    // Correct answers object
+    let correctAnswers = {};
+    let tableStructure = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set lesson title
+      
+      const userName = localStorage.getItem("userName");
+      const password = localStorage.getItem("password");
+      
+      if (!userName || !password) {
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://blearnend.onrender.com/checkData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password })
+        });
+        
+        const data = await res.json();
+        
+        if (data.state === "error") {
+          localStorage.removeItem("userName");
+          localStorage.removeItem("password");
+          window.location.href = "/login";
+        } else if (data.state === "success" && data.sessionExpired === "true") {
+          window.location.href = "https://blearn.netlify.app/ad";
+        } else {
+          console.log("Successful login");
+        }
+      } catch (err) {
+        console.error("Fehler beim Prüfen der Daten:", err);
+        window.location.href = "/login";
+      }
+      
+      if (lesson) {
+        document.getElementById('lessonTitle').textContent = lesson;
+      }
+
+      // Get table data from server
+      try {
+        const userName = localStorage.getItem('userName');
+        const password = localStorage.getItem('password');
+
+        if (!userName || !password) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const res = await fetch("https://verbose-palm-tree-g449pxr7gjg9396pr-3000.app.github.dev/gettable", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, password, route, lesson })
+        });
+
+        if (!res.ok) {
+          throw new Error('Server responded with error');
+        }
+
+        const data = await res.json();
+        
+        if (!data || !data.table) {
+          throw new Error('Invalid data format received');
+        }
+
+        const table = data.table;
+        tableStructure = table;
+
+        // Create table structure
+        buildTable(table);
+
+      } catch (error) {
+        alert(error);
+        console.error('Error loading table:', error);
+        document.getElementById('tableBody').innerHTML = `
+          <tr>
+            <td colspan="100%" class="py-4 text-center text-red-400">
+              Fehler beim Laden der Tabelle. Bitte versuche es später erneut.
+            </td>
+          </tr>
+        `;
+      }
+    });
+
+    function buildTable(table) {
+      const { columns, rows, tableData } = table;
+      const tableHeader = document.getElementById('tableHeader');
+      const tableBody = document.getElementById('tableBody');
+      
+      // Clear existing content
+      tableHeader.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      // Create header row
+      const headerRow = document.createElement('tr');
+      
+      // Empty cell for row headers
+      const emptyHeaderCell = document.createElement('th');
+      emptyHeaderCell.className = 'py-3 px-4 text-left bg-gray-600';
+      headerRow.appendChild(emptyHeaderCell);
+      
+      // Column headers
+      columns.forEach(column => {
+        const th = document.createElement('th');
+        th.className = 'py-3 px-4 text-left';
+        th.textContent = column;
+        headerRow.appendChild(th);
+      });
+      
+      tableHeader.appendChild(headerRow);
+
+      // Create data rows
+      rows.forEach((rowHeader, rowIndex) => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-700';
+        
+        // Row header
+        const rowHeaderCell = document.createElement('td');
+        rowHeaderCell.className = 'py-3 px-4 font-semibold bg-gray-700';
+        rowHeaderCell.textContent = rowHeader;
+        row.appendChild(rowHeaderCell);
+        
+        // Data cells
+        columns.forEach((column, colIndex) => {
+          const cell = document.createElement('td');
+          cell.className = 'py-3 px-4';
+          
+          const dataIndex = rowIndex * columns.length + colIndex;
+          const cellId = `cell-${rowIndex}-${colIndex}`;
+          const correctValue = tableData[dataIndex] || '';
+          
+          // Store correct answer
+          correctAnswers[cellId] = correctValue.toLowerCase();
+          
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = cellId;
+          input.className = 'w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
+          input.placeholder = 'Antwort eingeben...';
+          
+          const solutionSpan = document.createElement('span');
+          solutionSpan.id = `${cellId}-solution`;
+          solutionSpan.className = 'hidden text-red-400 text-sm mt-1 block';
+          
+          cell.appendChild(input);
+          cell.appendChild(solutionSpan);
+          row.appendChild(cell);
+        });
+        
+        tableBody.appendChild(row);
+      });
+
+      // Table is now ready with correct answers in their proper positions
+    }
+
+
+
+    function checkAnswers() {
+      for (const id in correctAnswers) {
+        const inputField = document.getElementById(id);
+        const solutionSpan = document.getElementById(`${id}-solution`);
+        
+        if (!inputField) continue;
+        
+        const userAnswer = inputField.value.trim().toLowerCase();
+        const correctAnswer = correctAnswers[id].toLowerCase();
+
+        // Remove previous styling
+        inputField.classList.remove('bg-green-700', 'bg-red-700', 'border-green-500', 'border-red-500');
+        
+        if (userAnswer === correctAnswer) {
+          // Correct answer
+          inputField.classList.add('bg-green-700', 'border-green-500');
+          if (solutionSpan) solutionSpan.classList.add('hidden');
+        } else {
+          // Incorrect answer
+          inputField.classList.add('bg-red-700', 'border-red-500');
+          if (solutionSpan) {
+            solutionSpan.textContent = `Richtige Antwort: ${correctAnswers[id]}`;
+            solutionSpan.classList.remove('hidden');
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
