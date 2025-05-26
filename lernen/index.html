@@ -131,8 +131,8 @@
         <!-- Dropdown für Vokabelliste -->
         <div class="relative">
           <button id="vocabDropdownBtn" onclick="toggleVocabDropdown()" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-4 py-2 rounded shadow flex items-center space-x-2 transition-all duration-200">
-            <span>➕ Neue Vokabelliste</span>
-            <svg id="dropdownArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span>➕ Neue Übung</span>
+            <svg id="dropdownArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewbox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
@@ -143,8 +143,18 @@
               <button onclick="createList()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-400 transition-colors duration-150">
                 <span class="mr-3 text-lg">📝</span>
                 <div>
-                  <div class="font-medium">Erstellen</div>
+                  <div class="font-medium">Liste erstellen</div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">Neue Vokabelliste anlegen</div>
+                </div>
+              </button>
+              
+              <hr class="border-gray-100 dark:border-gray-600">
+              
+              <button onclick="createTable()" class="flex items-center w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-400 transition-colors duration-150">
+                <span class="mr-3 text-lg">📝</span>
+                <div>
+                  <div class="font-medium">Tabelle erstellen</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Neue Tabelle anlegen</div>
                 </div>
               </button>
               
@@ -382,6 +392,8 @@
           try {
             if (lesson.type === 1) { // Wenn es ein Ordner ist
               window.location.href = `/lernen?route=${route}/${encodeURIComponent(lesson.name)}`;
+            } else if (lesson.type === 2) {
+              window.location.href = `/table?route=${route}&lesson=${encodeURIComponent(lesson.name)}`;
             } else { // Wenn es eine Vokabelliste ist
               window.location.href = `/list?route=${encodeURIComponent(route)}&lesson=${encodeURIComponent(lesson.name)}`;
             }
@@ -390,7 +402,10 @@
           }
         };
         
-        const icon = lesson.type === 0 ? "📗" : "📁";
+        
+        let icon = "📁"
+        if(lesson.type === 0) icon = "📗"
+        if(lesson.type === 2) icon = "📑"
         item.innerHTML = `
           <div class="flex justify-between items-center">
             <span class="text-gray-800 dark:text-gray-200">${icon} ${lesson.name}</span>
@@ -773,11 +788,19 @@
     window.location.href = `/createlist?route=${encodeURIComponent(route)}`;
   }
 
-  function importList() {
+  function createTable() {
     // Dropdown schließen
     document.getElementById("vocabDropdownMenu").classList.add("hidden");
     document.getElementById("dropdownArrow").style.transform = "rotate(0deg)";
     
+    window.location.href = `/createtable?route=${encodeURIComponent(route)}`;
+  }
+    
+  function importList() {
+    // Dropdown schließen
+    document.getElementById("vocabDropdownMenu").classList.add("hidden");
+    document.getElementById("dropdownArrow").style.transform = "rotate(0deg)";
+
     window.location.href = `/importList?route=${encodeURIComponent(route)}`;
   }
     
